@@ -1,7 +1,6 @@
 import streamlit as st
 import numpy as np
-import cv2
-from PIL import Image
+from PIL import Image, ImageDraw
 from facenet_pytorch import InceptionResnetV1, MTCNN
 from scipy.spatial.distance import cosine
 import pickle
@@ -66,17 +65,19 @@ def main():
 
     if uploaded_file is not None:
         image = Image.open(uploaded_file)
+        st.image(image, caption='Uploaded Image', use_column_width=True)
         
         results = recognize_from_image(image)
         
         if results:
             img_np = np.array(image)
+            draw = ImageDraw.Draw(image)
             for result in results:
                 name = result['name']
                 box = result['box']
                 if box is not None:
-                    cv2.rectangle(img_np, (int(box[0]), int(box[1])), (int(box[2]), int(box[3])), (0, 255, 0), 2)
-                    cv2.putText(img_np, name, (int(box[0]), int(box[1]) - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 255, 0), 2)
+                    draw.rectangle([box[0], box[1], box[2], box[3]], outline="green", width=3)
+                    draw.text((box[0], box[1] - 10), name, fill="green")
             
             result_image = Image.fromarray(img_np)
             st.image(result_image, caption='Processed Image', use_column_width=True)
