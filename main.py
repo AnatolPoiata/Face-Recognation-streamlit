@@ -78,7 +78,7 @@ def main():
 
             # Load a larger font
             try:
-                font = ImageFont.truetype("path/to/your/font/arialbd.ttf", 26)  # Update path
+                font = ImageFont.truetype("ARIALBD.TTF", 26)  # Update path
             except IOError:
                 font = ImageFont.load_default()  # Fallback to default if custom font is not available
 
