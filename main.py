@@ -1,6 +1,6 @@
 import streamlit as st
 import numpy as np
-from PIL import Image, ImageDraw
+from PIL import Image, ImageDraw, ImageFont
 from facenet_pytorch import InceptionResnetV1, MTCNN
 from scipy.spatial.distance import cosine
 import pickle
@@ -61,29 +61,30 @@ def recognize_from_image(image):
 def main():
     st.title('Face Recognition App')
 
-    uploaded_file = st.file_uploader("Choose an image file", type=["jpg", "jpeg", "png"])
+    uploaded_file = st.file_uploader("Choose an image file", type=["jpg", "jpeg"])
 
     if uploaded_file is not None:
         image = Image.open(uploaded_file)
-        st.image(image, caption='Uploaded Image', use_column_width=True)
-        
+
         results = recognize_from_image(image)
-        
+        font = ImageFont.truetype("arialbd.ttf", 24)
+        bright_green = (0, 255, 127)
         if results:
-            img_np = np.array(image)
-            draw = ImageDraw.Draw(image)
+            # Draw on the image
+            img_with_boxes = image.copy()
+            draw = ImageDraw.Draw(img_with_boxes)
             for result in results:
                 name = result['name']
                 box = result['box']
                 if box is not None:
-                    draw.rectangle([box[0], box[1], box[2], box[3]], outline="green", width=3)
-                    draw.text((box[0], box[1] - 10), name, fill="green")
+                    # Draw the rectangle and text
+                    draw.rectangle([box[0], box[1], box[2], box[3]], outline=bright_green, width=3)
+                    draw.text((box[0], box[1] - 24), name, fill=bright_green, font=font)
             
-            result_image = Image.fromarray(img_np)
-            st.image(result_image, caption='Processed Image', use_column_width=True)
+            st.image(img_with_boxes, use_column_width=True)
             
-            recognized_names = ', '.join([result['name'] for result in results])
-            st.write(f"Recognized Faces: {recognized_names}")
+            # recognized_names = ', '.join([result['name'] for result in results])
+            # st.write(f"Recognized Faces: {recognized_names}")
         else:
             st.write("No faces detected.")
 
