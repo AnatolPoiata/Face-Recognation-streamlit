@@ -67,7 +67,11 @@ def main():
         image = Image.open(uploaded_file)
 
         results = recognize_from_image(image)
-        font = ImageFont.truetype("arialbd.ttf", 24)
+        try:
+                font = ImageFont.truetype("arialbd.ttf", 26)  # You can use a path to a bold font file if available
+        except IOError:
+                font = ImageFont.load_default()
+                
         bright_green = (0, 255, 127)
         if results:
             # Draw on the image
@@ -79,7 +83,7 @@ def main():
                 if box is not None:
                     # Draw the rectangle and text
                     draw.rectangle([box[0], box[1], box[2], box[3]], outline=bright_green, width=3)
-                    draw.text((box[0], box[1] - 24), name, fill=bright_green, font=font)
+                    draw.text((box[0], box[1] - 26), name, fill=bright_green, font=font)
             
             st.image(img_with_boxes, use_column_width=True)
             
