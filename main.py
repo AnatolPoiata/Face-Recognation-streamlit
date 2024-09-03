@@ -68,7 +68,7 @@ def main():
 
         results = recognize_from_image(image)
         try:
-                font = ImageFont.truetype("arialbd.ttf", 26)  # You can use a path to a bold font file if available
+                font = ImageFont.truetype("ARIALBD.TTF", 26)  # You can use a path to a bold font file if available
         except IOError:
                 font = ImageFont.load_default()
                 
