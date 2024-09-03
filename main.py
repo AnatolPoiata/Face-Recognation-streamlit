@@ -57,7 +57,6 @@ def recognize_from_image(image):
                 results.append({'name': name, 'box': bounding_boxes[idx]})
 
     return results
-
 def main():
     st.title('Face Recognition App')
 
@@ -65,32 +64,47 @@ def main():
 
     if uploaded_file is not None:
         image = Image.open(uploaded_file)
+        # st.image(image, caption='Uploaded Image', use_column_width=True)
 
         results = recognize_from_image(image)
-        try:
-                font = ImageFont.truetype("ARIALBD.TTF", 26)  # You can use a path to a bold font file if available
-        except IOError:
-                font = ImageFont.load_default()
-                
-        bright_green = (0, 255, 127)
+        
         if results:
             # Draw on the image
             img_with_boxes = image.copy()
             draw = ImageDraw.Draw(img_with_boxes)
+
+            # Define colors
+            text_color = (255, 255,255)  # Semi-transparent black
+
+            # Load a larger font
+            try:
+                font = ImageFont.truetype("path/to/your/font/arialbd.ttf", 26)  # Update path
+            except IOError:
+                font = ImageFont.load_default()  # Fallback to default if custom font is not available
+
             for result in results:
                 name = result['name']
                 box = result['box']
                 if box is not None:
-                    # Draw the rectangle and text
-                    draw.rectangle([box[0], box[1], box[2], box[3]], outline=bright_green, width=3)
-                    draw.text((box[0], box[1] - 26), name, fill=bright_green, font=font)
+                    # Draw the rectangle
+                    draw.rectangle([box[0], box[1], box[2], box[3]], outline="green", width=3)
+                    
+                    # Calculate text size and position using textbbox
+                    text_bbox = draw.textbbox((box[0], box[1]), name, font=font)
+                    text_width = text_bbox[2] - text_bbox[0]
+                    text_height = text_bbox[3] - text_bbox[1]
+                    
+                    # Background rectangle
+                    background_box = [box[0], box[1] - text_height - 10, box[0] + text_width + 10, box[1]]
+                    draw.rectangle(background_box, fill="green")
+                    
+                    # Draw the text on top
+                    draw.text((box[0] + 5, box[1] - text_height - 5), name, fill=text_color, font=font)
             
             st.image(img_with_boxes, use_column_width=True)
             
-            # recognized_names = ', '.join([result['name'] for result in results])
-            # st.write(f"Recognized Faces: {recognized_names}")
         else:
-            st.write("No faces detected.")
+            st.markdown("<h2 style='color:red;'>No faces detected.</h2>", unsafe_allow_html=True)
 
 if __name__ == "__main__":
     main()
