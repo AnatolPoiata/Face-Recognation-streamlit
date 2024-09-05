@@ -10,6 +10,9 @@ import os
 mtcnn = MTCNN(keep_all=True)
 model = InceptionResnetV1(pretrained='vggface2').eval()
 
+# Define a threshold for recognizing a face
+RECOGNITION_THRESHOLD = 0.469  # Adjust this value based on your testing
+
 def load_embeddings(file='face_db.pkl'):
     if os.path.exists(file):
         with open(file, 'rb') as f:
@@ -51,17 +54,21 @@ def recognize_face(embedding, known_embeddings, known_names):
         if dist < min_distance:
             min_distance = dist
             name = known_names[i]
+    
+    # If the minimum distance is above the threshold, return "Unknown"
+    print(name, min_distance)
+    if min_distance > RECOGNITION_THRESHOLD:
+        name = "Unknown"
+    
     return name
 
 def recognize_from_image(image):
     embeddings, bounding_boxes = extract_embeddings(image)
-    recognized_faces = []
     results = []
 
     for idx, embedding in enumerate(embeddings):
         if embedding is not None:
             name = recognize_face(embedding[0], known_embeddings, known_names)
-            recognized_faces.append(name)
             if bounding_boxes is not None:
                 results.append({'name': name, 'box': bounding_boxes[idx]})
 
@@ -88,7 +95,7 @@ def main():
     st.title('Face Recognition App')
 
     # Upload an image for face recognition
-    uploaded_file = st.file_uploader("Choose an image file for recognition", type=["jpg", "jpeg"])
+    uploaded_file = st.file_uploader("Choose an image file for recognition", type=["jpg", "jpeg", "png"])
 
     if uploaded_file is not None:
         image = Image.open(uploaded_file)
@@ -131,14 +138,14 @@ def main():
         else:
             st.markdown("<h2 style='color:red;'>No faces detected.</h2>", unsafe_allow_html=True)
 
-    # Add a new face to the dataset
-    st.header('Add a New Face to the Dataset')
-    new_name = st.text_input("Enter your name")
-    new_image_file = st.file_uploader("Upload an image for adding to the dataset", type=["jpg", "jpeg"])
+    # Add a new face to the dataset with expander
+    with st.expander("Add a New Face to the Dataset"):
+        new_name = st.text_input("Enter your name")
+        new_image_file = st.file_uploader("Upload an image for adding to the dataset", type=["jpg", "jpeg", "png"])
 
-    if st.button("Add Face") and new_name and new_image_file:
-        new_image = Image.open(new_image_file)
-        add_new_face(new_name, new_image)
+        if st.button("Add Face") and new_name and new_image_file:
+            new_image = Image.open(new_image_file)
+            add_new_face(new_name, new_image)
 
 if __name__ == "__main__":
     main()
